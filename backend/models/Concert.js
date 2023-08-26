@@ -18,10 +18,9 @@ const ConcertSchema = new Schema({
         type: String,
         required: false,
     },
-    date: {
-        type: Date,
-        required: true,
-    },
+    date: [{
+        type: String
+    }],
     info: {
         type: String,
         required: false,
