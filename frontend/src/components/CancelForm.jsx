@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -8,7 +8,6 @@ function CancelForm() {
   const [email, setEmail] = useState("");
   const [token, setToken] = useState("");
   const [status, setStatus] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
 
   return (
     <div>
@@ -69,10 +68,17 @@ function CancelForm() {
                   .delete("http://localhost:5050/api/reservations", {
                     params: { email, token },
                   })
-                  .then((response) => setStatus("Delete successful"))
+                  .then((response) => {
+                    setStatus("Delete successful");
+                    setEmail("");
+                    setToken("");
+                    alert("Reservation canceled");
+                  })
                   .catch((error) => {
-                    setErrorMessage(error.message);
-                    console.error("There was an error!", error);
+                    alert(
+                      "There was an error! Reservation does not exist. Check your email and token.",
+                      error
+                    );
                   });
               }}
             >

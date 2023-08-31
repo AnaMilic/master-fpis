@@ -11,7 +11,15 @@ function ChangeReservation() {
   const [numberTickets, setNumberTickets] = useState("");
   const [email, setEmail] = useState("");
   const [token, setToken] = useState("");
+  //
+  const [amount, setAmount] = useState("");
+
   const fetchInfo = () => {
+    if (!email || !token) {
+      alert("Email and token are mandatory.");
+      return;
+    }
+
     return axios
       .get(`http://localhost:5050/api/reservations/getByEmailAndToken`, {
         params: {
@@ -20,21 +28,56 @@ function ChangeReservation() {
         },
       })
       .then((response) => {
-        setReservation(response.data[0]);
-        setNumberTickets(response.data[0].numberTickets);
+        if (response.data[0] == null) {
+          alert("Reservation does not exist");
+        } else {
+          setReservation(response.data[0]);
+          setNumberTickets(response.data[0].numberTickets);
+        }
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        console.log(error);
+        alert("Reservation does not exist");
+      });
   };
+
+  const calculatePrice = () => {
+    if (reservation == null) {
+      return 0;
+    }
+    let amountNew = 0;
+    for (let i = 1; i <= numberTickets; i++) {
+      if (i % 5 === 0) {
+        amountNew += reservation.seatingZoneId.price * 0.5;
+      } else {
+        amountNew += reservation.seatingZoneId.price;
+      }
+    }
+    if (new Date() < new Date("2023.09.30.")) {
+      amountNew = amountNew * 0.9;
+    }
+
+    if (reservation.promoCodeId) {
+      amountNew = amountNew * 0.95;
+    }
+
+    return amountNew;
+  };
+
   const updateOne = () => {
-    console.log({ numberTickets, reservation: reservation });
     return axios
       .patch(url, {
         reservation: {
           ...reservation,
           numberTickets,
+          amount: calculatePrice(),
         },
       })
-      .then((response) => setReservation(response.data));
+      .then((response) => {
+        setReservation(response.data);
+        alert("Successful change of reservation!");
+      })
+      .catch((error) => alert(`Change of reservation failed. Error: ${error}`));
   };
   return (
     <div>
@@ -79,6 +122,7 @@ function ChangeReservation() {
                 id="token"
                 name="token"
                 placeholder="Enter your token"
+                required
                 onChange={(e) => setToken(e.target.value)}
               />
             </div>
@@ -86,7 +130,6 @@ function ChangeReservation() {
             <button
               type="submit"
               className="btn"
-              disabled={!email}
               onClick={() => {
                 fetchInfo();
               }}
@@ -128,7 +171,28 @@ function ChangeReservation() {
                 max="50"
                 default="1"
                 onChange={(e) => setNumberTickets(e.target.value)}
-                style={{ marginBottom: "10px", marginTop: "10px" }}
+                style={{
+                  marginBottom: "25px",
+                  marginTop: "10px",
+                  width: "160px",
+                  height: "20px",
+                }}
+              ></input>
+              <br />
+              <label>Amount:</label>
+              <br />
+              <input
+                value={calculatePrice()}
+                id="amount"
+                type="text"
+                onChange={(e) => setAmount(e.target.value)}
+                style={{
+                  marginBottom: "25px",
+                  marginTop: "10px",
+                  width: "160px",
+                  height: "20px",
+                }}
+                disabled={true}
               ></input>
               <br />
               <button

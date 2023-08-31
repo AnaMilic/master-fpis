@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 
 const Customer = require("./Customer");
 const SeatingZone = require("./SeatingZone");
+const PromoCode = require("./PromoCode");
 
 const ReservationSchema = new Schema({
   customerId: {
@@ -19,6 +20,16 @@ const ReservationSchema = new Schema({
   },
   date: {
     type: Date,
+  },
+  amount: {
+    type: Number,
+    //seatingZone.price * numberTickets
+  },
+  promoCodeId: {
+    type: Schema.Types.ObjectId,
+    ref: PromoCode,
+    required: false,
+    default: null,
   },
 });
 

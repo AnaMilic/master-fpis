@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 
 function ReservationForm({ reservationData }) {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  console.log(reservationData);
+  useEffect(() => {
+    if (reservationData.date) {
+      setSearchParams({ date: reservationData.date });
+    }
+  }, [reservationData]);
 
   const [name, setName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -17,13 +22,14 @@ function ReservationForm({ reservationData }) {
   const [country, setCountry] = useState("");
   const [email, setEmail] = useState("");
   const [emailConfirm, setEmailConfirm] = useState("");
+  const [newPromoCode, setNewPromoCode] = useState("");
   const [token, setToken] = useState(null);
   const [promoCode, setPromoCode] = useState(null);
 
   const [seatingZone, setSeatingZone] = useState([]);
   const [selectedSeatingZone, setSelectedSeatingZone] = useState(null);
 
-  const [numberTickets, setNumberTickets] = useState("");
+  const [numberTickets, setNumberTickets] = useState(1);
 
   const url = "http://localhost:5050/api/seatingZones";
   const fetchInfo = () => {
@@ -58,7 +64,8 @@ function ReservationForm({ reservationData }) {
         reservation: {
           seatingZone: selectedSeatingZone ?? seatingZone[0]._id,
           numberTickets,
-          date: reservationData.date,
+          date: searchParams.get("date"),
+          code: newPromoCode,
         },
       });
 
@@ -95,13 +102,14 @@ function ReservationForm({ reservationData }) {
         setToken(formattedResponse.token.token);
         setPromoCode(formattedResponse.code.code);
         alert(
-          `Reservation is successfull, your token: ${formattedResponse.token.token}, your promo code: ${formattedResponse.code.code}`
+          `Reservation is successfull, your token: ${formattedResponse.token.token}, your promo code: ${formattedResponse.code.code}. Total amount: ${formattedResponse.reservation.amount} din`
         );
+        navigate("/");
       } else {
-        alert("Reservation failed");
+        alert(formattedResponse);
       }
     } catch (error) {
-      console.log({ error });
+      alert(error);
     }
   };
 
@@ -238,8 +246,19 @@ function ReservationForm({ reservationData }) {
                 required
                 onChange={(e) => setEmailConfirm(e.target.value)}
               />
+              {email !== emailConfirm && (
+                <label
+                  style={{
+                    color: "red",
+                    display: "block",
+                    marginTop: "10px",
+                    marginBottom: "10px",
+                  }}
+                >
+                  Emails must be the same!
+                </label>
+              )}
             </div>
-
             <div className="field">
               <label htmlFor=""> Choose a zone: </label> <br />
               <br />
@@ -262,17 +281,16 @@ function ReservationForm({ reservationData }) {
             </div>
 
             <div className="field">
-              <label> Number of tickets:</label>
+              <label> Number of tickets*:</label>
               <input
                 type="number"
                 id="quantity"
-                value={numberTickets}
                 name="quantity"
                 min="1"
                 max="50"
-                default="1"
                 placeholder="Choose number of tickets"
                 required
+                value={numberTickets}
                 onChange={(e) => setNumberTickets(e.target.value)}
               ></input>
             </div>
@@ -284,9 +302,15 @@ function ReservationForm({ reservationData }) {
                 id="codes"
                 name="codes"
                 placeholder="Enter promo code"
+                value={newPromoCode}
+                onChange={(e) => setNewPromoCode(e.target.value)}
               />
             </div>
-            <button type="submit" className="btn">
+            <button
+              type="submit"
+              className="btn"
+              disabled={email !== emailConfirm}
+            >
               {" "}
               MAKE RESERVATION{" "}
             </button>

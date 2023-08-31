@@ -1,21 +1,19 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-const Customer = require("./Customer");
 
 const PromoCodeSchema = new Schema({
-  customerId: {
-    type: Schema.Types.ObjectId,
-    ref: Customer,
-    required: true,
-  },
   code: {
     type: String,
     required: true,
   },
   status: {
-    type: String,
+    type: String, // used, unused, deleted
     required: true,
     default: "unused",
+  },
+  reservationId: {
+    type: String,
+    required: true,
   },
 });
 
