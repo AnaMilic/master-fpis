@@ -77,7 +77,7 @@ function ChangeReservation() {
         setReservation(response.data);
         alert("Successful change of reservation!");
       })
-      .catch((error) => alert(`Change of reservation failed. Error: ${error}`));
+      .catch((error) => alert(`Change of reservation failed.`));
   };
   return (
     <div>
